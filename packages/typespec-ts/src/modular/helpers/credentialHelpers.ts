@@ -16,6 +16,7 @@ export function importCredential(
       });
       return;
     case "OAuth2":
+    case undefined:
       clientSourceFile.addImportDeclaration({
         moduleSpecifier: "@azure/core-auth",
         namedImports: ["TokenCredential"]
