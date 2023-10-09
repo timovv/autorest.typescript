@@ -139,20 +139,18 @@ export function _createTranscriptionSend(
 ): StreamableMethod<
   CreateTranscription200Response | CreateTranscriptionDefaultResponse
 > {
-  return context
-    .path("/audio/transcriptions")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      contentType: (options.contentType as any) ?? "multipart/form-data",
-      body: {
-        file: uint8ArrayToString(audio["file"], "binary"),
-        model: audio["model"],
-        prompt: audio["prompt"],
-        response_format: audio["responseFormat"],
-        temperature: audio["temperature"],
-        language: audio["language"],
-      },
-    });
+  return context.path("/audio/transcriptions").post({
+    ...operationOptionsToRequestParameters(options),
+    contentType: (options.contentType as any) ?? "multipart/form-data",
+    body: {
+      file: uint8ArrayToString(audio["file"], "binary"),
+      model: audio["model"],
+      prompt: audio["prompt"],
+      response_format: audio["responseFormat"],
+      temperature: audio["temperature"],
+      language: audio["language"],
+    },
+  });
 }
 
 export async function _createTranscriptionDeserialize(
@@ -183,19 +181,17 @@ export function _createTranslationSend(
 ): StreamableMethod<
   CreateTranslation200Response | CreateTranslationDefaultResponse
 > {
-  return context
-    .path("/audio/translations")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      contentType: (options.contentType as any) ?? "multipart/form-data",
-      body: {
-        file: uint8ArrayToString(audio["file"], "binary"),
-        model: audio["model"],
-        prompt: audio["prompt"],
-        response_format: audio["responseFormat"],
-        temperature: audio["temperature"],
-      },
-    });
+  return context.path("/audio/translations").post({
+    ...operationOptionsToRequestParameters(options),
+    contentType: (options.contentType as any) ?? "multipart/form-data",
+    body: {
+      file: uint8ArrayToString(audio["file"], "binary"),
+      model: audio["model"],
+      prompt: audio["prompt"],
+      response_format: audio["responseFormat"],
+      temperature: audio["temperature"],
+    },
+  });
 }
 
 export async function _createTranslationDeserialize(
@@ -226,41 +222,39 @@ export function _createChatCompletionSend(
 ): StreamableMethod<
   CreateChatCompletion200Response | CreateChatCompletionDefaultResponse
 > {
-  return context
-    .path("/chat/completions")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: {
-        model: body["model"],
-        messages: (body["messages"] ?? []).map((p) => ({
-          role: p["role"],
-          content: p["content"],
-          name: p["name"],
-          function_call: !p.functionCall
-            ? undefined
-            : {
-                name: p.functionCall?.["name"],
-                arguments: p.functionCall?.["arguments"],
-              },
-        })),
-        functions: (body["functions"] ?? []).map((p) => ({
-          name: p["name"],
-          description: p["description"],
-          parameters: p["parameters"],
-        })),
-        function_call: body["functionCall"],
-        temperature: body["temperature"],
-        top_p: body["topP"],
-        n: body["n"],
-        max_tokens: body["maxTokens"],
-        stop: body["stop"],
-        presence_penalty: body["presencePenalty"],
-        frequency_penalty: body["frequencyPenalty"],
-        logit_bias: body["logitBias"],
-        user: body["user"],
-        stream: body["stream"],
-      },
-    });
+  return context.path("/chat/completions").post({
+    ...operationOptionsToRequestParameters(options),
+    body: {
+      model: body["model"],
+      messages: (body["messages"] ?? []).map((p) => ({
+        role: p["role"],
+        content: p["content"],
+        name: p["name"],
+        function_call: !p.functionCall
+          ? undefined
+          : {
+              name: p.functionCall?.["name"],
+              arguments: p.functionCall?.["arguments"],
+            },
+      })),
+      functions: (body["functions"] ?? []).map((p) => ({
+        name: p["name"],
+        description: p["description"],
+        parameters: p["parameters"],
+      })),
+      function_call: body["functionCall"],
+      temperature: body["temperature"],
+      top_p: body["topP"],
+      n: body["n"],
+      max_tokens: body["maxTokens"],
+      stop: body["stop"],
+      presence_penalty: body["presencePenalty"],
+      frequency_penalty: body["frequencyPenalty"],
+      logit_bias: body["logitBias"],
+      user: body["user"],
+      stream: body["stream"],
+    },
+  });
 }
 
 export async function _createChatCompletionDeserialize(
@@ -315,20 +309,18 @@ export function _createFineTuningJobSend(
 ): StreamableMethod<
   CreateFineTuningJob200Response | CreateFineTuningJobDefaultResponse
 > {
-  return context
-    .path("/fine_tuning/jobs")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: {
-        training_file: job["trainingFile"],
-        validation_file: job["validationFile"],
-        model: job["model"],
-        hyperparameters: !job.hyperparameters
-          ? undefined
-          : { n_epochs: job.hyperparameters?.["nEpochs"] },
-        suffix: job["suffix"],
-      },
-    });
+  return context.path("/fine_tuning/jobs").post({
+    ...operationOptionsToRequestParameters(options),
+    body: {
+      training_file: job["trainingFile"],
+      validation_file: job["validationFile"],
+      model: job["model"],
+      hyperparameters: !job.hyperparameters
+        ? undefined
+        : { n_epochs: job.hyperparameters?.["nEpochs"] },
+      suffix: job["suffix"],
+    },
+  });
 }
 
 export async function _createFineTuningJobDeserialize(
@@ -389,12 +381,10 @@ export function _listPaginatedFineTuningJobsSend(
   | ListPaginatedFineTuningJobs200Response
   | ListPaginatedFineTuningJobsDefaultResponse
 > {
-  return context
-    .path("/fine_tuning/jobs")
-    .get({
-      ...operationOptionsToRequestParameters(options),
-      queryParameters: { after: options?.after, limit: options?.limit },
-    });
+  return context.path("/fine_tuning/jobs").get({
+    ...operationOptionsToRequestParameters(options),
+    queryParameters: { after: options?.after, limit: options?.limit },
+  });
 }
 
 export async function _listPaginatedFineTuningJobsDeserialize(
@@ -412,7 +402,7 @@ export async function _listPaginatedFineTuningJobsDeserialize(
       id: p["id"],
       object: p["object"],
       createdAt: new Date(p["created_at"]),
-      finishedAt: new Date(p["finished_at"]),
+      finishedAt: p["finished_at"] ? new Date(p["finished_at"]) : null,
       model: p["model"],
       fineTunedModel: p["fine_tuned_model"],
       organizationId: p["organization_id"],
@@ -617,29 +607,27 @@ export function _createCompletionSend(
 ): StreamableMethod<
   CreateCompletion200Response | CreateCompletionDefaultResponse
 > {
-  return context
-    .path("/completions")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: {
-        model: body["model"],
-        prompt: body["prompt"],
-        suffix: body["suffix"],
-        temperature: body["temperature"],
-        top_p: body["topP"],
-        n: body["n"],
-        max_tokens: body["maxTokens"],
-        stop: body["stop"],
-        presence_penalty: body["presencePenalty"],
-        frequency_penalty: body["frequencyPenalty"],
-        logit_bias: body["logitBias"],
-        user: body["user"],
-        stream: body["stream"],
-        logprobs: body["logprobs"],
-        echo: body["echo"],
-        best_of: body["bestOf"],
-      },
-    });
+  return context.path("/completions").post({
+    ...operationOptionsToRequestParameters(options),
+    body: {
+      model: body["model"],
+      prompt: body["prompt"],
+      suffix: body["suffix"],
+      temperature: body["temperature"],
+      top_p: body["topP"],
+      n: body["n"],
+      max_tokens: body["maxTokens"],
+      stop: body["stop"],
+      presence_penalty: body["presencePenalty"],
+      frequency_penalty: body["frequencyPenalty"],
+      logit_bias: body["logitBias"],
+      user: body["user"],
+      stream: body["stream"],
+      logprobs: body["logprobs"],
+      echo: body["echo"],
+      best_of: body["bestOf"],
+    },
+  });
 }
 
 export async function _createCompletionDeserialize(
@@ -666,7 +654,7 @@ export async function _createCompletionDeserialize(
               topLogprobs: p.logprobs["top_logprobs"],
               textOffset: p.logprobs["text_offset"],
             },
-      finishReason: p["finish_reason"] as any,
+      finishReason: p["finish_reason"],
     })),
     usage: !result.body.usage
       ? undefined
@@ -692,19 +680,17 @@ export function _createEditSend(
   edit: CreateEditRequest,
   options: CreateEditOptions = { requestOptions: {} }
 ): StreamableMethod<CreateEdit200Response | CreateEditDefaultResponse> {
-  return context
-    .path("/edits")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: {
-        model: edit["model"],
-        input: edit["input"],
-        instruction: edit["instruction"],
-        n: edit["n"],
-        temperature: edit["temperature"],
-        top_p: edit["topP"],
-      },
-    });
+  return context.path("/edits").post({
+    ...operationOptionsToRequestParameters(options),
+    body: {
+      model: edit["model"],
+      input: edit["input"],
+      instruction: edit["instruction"],
+      n: edit["n"],
+      temperature: edit["temperature"],
+      top_p: edit["topP"],
+    },
+  });
 }
 
 export async function _createEditDeserialize(
@@ -746,16 +732,14 @@ export function _createEmbeddingSend(
 ): StreamableMethod<
   CreateEmbedding200Response | CreateEmbeddingDefaultResponse
 > {
-  return context
-    .path("/embeddings")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: {
-        model: embedding["model"],
-        input: embedding["input"],
-        user: embedding["user"],
-      },
-    });
+  return context.path("/embeddings").post({
+    ...operationOptionsToRequestParameters(options),
+    body: {
+      model: embedding["model"],
+      input: embedding["input"],
+      user: embedding["user"],
+    },
+  });
 }
 
 export async function _createEmbeddingDeserialize(
@@ -833,16 +817,14 @@ export function _createFileSend(
   file: CreateFileRequest,
   options: CreateFileOptions = { requestOptions: {} }
 ): StreamableMethod<CreateFile200Response | CreateFileDefaultResponse> {
-  return context
-    .path("/files")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      contentType: (options.contentType as any) ?? "multipart/form-data",
-      body: {
-        file: uint8ArrayToString(file["file"], "binary"),
-        purpose: file["purpose"],
-      },
-    });
+  return context.path("/files").post({
+    ...operationOptionsToRequestParameters(options),
+    contentType: (options.contentType as any) ?? "multipart/form-data",
+    body: {
+      file: uint8ArrayToString(file["file"], "binary"),
+      purpose: file["purpose"],
+    },
+  });
 }
 
 export async function _createFileDeserialize(
@@ -978,26 +960,23 @@ export function _createFineTuneSend(
   fineTune: CreateFineTuneRequest,
   options: CreateFineTuneOptions = { requestOptions: {} }
 ): StreamableMethod<CreateFineTune200Response | CreateFineTuneDefaultResponse> {
-  return context
-    .path("/fine-tunes")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: {
-        training_file: fineTune["trainingFile"],
-        validation_file: fineTune["validationFile"],
-        model: fineTune["model"],
-        n_epochs: fineTune["nEpochs"],
-        batch_size: fineTune["batchSize"],
-        learning_rate_multiplier: fineTune["learningRateMultiplier"],
-        prompt_loss_rate: fineTune["promptLossRate"],
-        compute_classification_metrics:
-          fineTune["computeClassificationMetrics"],
-        classification_n_classes: fineTune["classificationNClasses"],
-        classification_positive_class: fineTune["classificationPositiveClass"],
-        classification_betas: fineTune["classificationBetas"],
-        suffix: fineTune["suffix"],
-      },
-    });
+  return context.path("/fine-tunes").post({
+    ...operationOptionsToRequestParameters(options),
+    body: {
+      training_file: fineTune["trainingFile"],
+      validation_file: fineTune["validationFile"],
+      model: fineTune["model"],
+      n_epochs: fineTune["nEpochs"],
+      batch_size: fineTune["batchSize"],
+      learning_rate_multiplier: fineTune["learningRateMultiplier"],
+      prompt_loss_rate: fineTune["promptLossRate"],
+      compute_classification_metrics: fineTune["computeClassificationMetrics"],
+      classification_n_classes: fineTune["classificationNClasses"],
+      classification_positive_class: fineTune["classificationPositiveClass"],
+      classification_betas: fineTune["classificationBetas"],
+      suffix: fineTune["suffix"],
+    },
+  });
 }
 
 export async function _createFineTuneDeserialize(
@@ -1259,12 +1238,10 @@ export function _listFineTuneEventsSend(
 ): StreamableMethod<
   ListFineTuneEvents200Response | ListFineTuneEventsDefaultResponse
 > {
-  return context
-    .path("/fine-tunes/{fine_tune_id}/events", fineTuneId)
-    .get({
-      ...operationOptionsToRequestParameters(options),
-      queryParameters: { stream: options?.stream },
-    });
+  return context.path("/fine-tunes/{fine_tune_id}/events", fineTuneId).get({
+    ...operationOptionsToRequestParameters(options),
+    queryParameters: { stream: options?.stream },
+  });
 }
 
 export async function _listFineTuneEventsDeserialize(
@@ -1494,18 +1471,16 @@ export function _createImageSend(
   image: CreateImageRequest,
   options: CreateImageOptions = { requestOptions: {} }
 ): StreamableMethod<CreateImage200Response | CreateImageDefaultResponse> {
-  return context
-    .path("/images/generations")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: {
-        prompt: image["prompt"],
-        n: image["n"],
-        size: image["size"],
-        response_format: image["responseFormat"],
-        user: image["user"],
-      },
-    });
+  return context.path("/images/generations").post({
+    ...operationOptionsToRequestParameters(options),
+    body: {
+      prompt: image["prompt"],
+      n: image["n"],
+      size: image["size"],
+      response_format: image["responseFormat"],
+      user: image["user"],
+    },
+  });
 }
 
 export async function _createImageDeserialize(
@@ -1543,24 +1518,22 @@ export function _createImageEditSend(
 ): StreamableMethod<
   CreateImageEdit200Response | CreateImageEditDefaultResponse
 > {
-  return context
-    .path("/images/edits")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      contentType: (options.contentType as any) ?? "multipart/form-data",
-      body: {
-        prompt: image["prompt"],
-        image: uint8ArrayToString(image["image"], "binary"),
-        mask:
-          image["mask"] !== undefined
-            ? uint8ArrayToString(image["mask"], "binary")
-            : undefined,
-        n: image["n"],
-        size: image["size"],
-        response_format: image["responseFormat"],
-        user: image["user"],
-      },
-    });
+  return context.path("/images/edits").post({
+    ...operationOptionsToRequestParameters(options),
+    contentType: (options.contentType as any) ?? "multipart/form-data",
+    body: {
+      prompt: image["prompt"],
+      image: uint8ArrayToString(image["image"], "binary"),
+      mask:
+        image["mask"] !== undefined
+          ? uint8ArrayToString(image["mask"], "binary")
+          : undefined,
+      n: image["n"],
+      size: image["size"],
+      response_format: image["responseFormat"],
+      user: image["user"],
+    },
+  });
 }
 
 export async function _createImageEditDeserialize(
@@ -1598,19 +1571,17 @@ export function _createImageVariationSend(
 ): StreamableMethod<
   CreateImageVariation200Response | CreateImageVariationDefaultResponse
 > {
-  return context
-    .path("/images/variations")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      contentType: (options.contentType as any) ?? "multipart/form-data",
-      body: {
-        image: uint8ArrayToString(image["image"], "binary"),
-        n: image["n"],
-        size: image["size"],
-        response_format: image["responseFormat"],
-        user: image["user"],
-      },
-    });
+  return context.path("/images/variations").post({
+    ...operationOptionsToRequestParameters(options),
+    contentType: (options.contentType as any) ?? "multipart/form-data",
+    body: {
+      image: uint8ArrayToString(image["image"], "binary"),
+      n: image["n"],
+      size: image["size"],
+      response_format: image["responseFormat"],
+      user: image["user"],
+    },
+  });
 }
 
 export async function _createImageVariationDeserialize(
@@ -1648,12 +1619,10 @@ export function _createModerationSend(
 ): StreamableMethod<
   CreateModeration200Response | CreateModerationDefaultResponse
 > {
-  return context
-    .path("/moderations")
-    .post({
-      ...operationOptionsToRequestParameters(options),
-      body: { input: content["input"], model: content["model"] },
-    });
+  return context.path("/moderations").post({
+    ...operationOptionsToRequestParameters(options),
+    body: { input: content["input"], model: content["model"] },
+  });
 }
 
 export async function _createModerationDeserialize(
@@ -1666,35 +1635,37 @@ export async function _createModerationDeserialize(
   return {
     id: result.body["id"],
     model: result.body["model"],
-    results: (result.body["results"] ?? []).map((p) => ({
-      flagged: p["flagged"],
-      categories: {
-        hate: p.categories["hate"],
-        "hate/threatening": p.categories["hate/threatening"],
-        harassment: p.categories["harassment"],
-        "harassment/threatening": p.categories["harassment/threatening"],
-        selfHarm: p.categories["self-harm"],
-        "selfHarm/intent": p.categories["self-harm/intent"],
-        "selfHarm/instructive": p.categories["self-harm/instructive"],
-        sexual: p.categories["sexual"],
-        "sexual/minors": p.categories["sexual/minors"],
-        violence: p.categories["violence"],
-        "violence/graphic": p.categories["violence/graphic"],
-      },
-      categoryScores: {
-        hate: p.category_scores["hate"],
-        "hate/threatening": p.category_scores["hate/threatening"],
-        harassment: p.category_scores["harassment"],
-        "harassment/threatening": p.category_scores["harassment/threatening"],
-        selfHarm: p.category_scores["self-harm"],
-        "selfHarm/intent": p.category_scores["self-harm/intent"],
-        "selfHarm/instructive": p.category_scores["self-harm/instructive"],
-        sexual: p.category_scores["sexual"],
-        "sexual/minors": p.category_scores["sexual/minors"],
-        violence: p.category_scores["violence"],
-        "violence/graphic": p.category_scores["violence/graphic"],
-      },
-    })),
+    results: (result.body["results"] ?? []).map(
+      (p): CreateModerationResponse["results"][number] => ({
+        flagged: p["flagged"],
+        categories: {
+          hate: p.categories["hate"],
+          "hate/threatening": p.categories["hate/threatening"],
+          harassment: p.categories["harassment"],
+          "harassment/threatening": p.categories["harassment/threatening"],
+          selfHarm: p.categories["self-harm"],
+          "self-harm/intent": p.categories["self-harm/intent"],
+          "self-harm/instructive": p.categories["self-harm/instructive"],
+          sexual: p.categories["sexual"],
+          "sexual/minors": p.categories["sexual/minors"],
+          violence: p.categories["violence"],
+          "violence/graphic": p.categories["violence/graphic"],
+        },
+        categoryScores: {
+          hate: p.category_scores["hate"],
+          "hate/threatening": p.category_scores["hate/threatening"],
+          harassment: p.category_scores["harassment"],
+          "harassment/threatening": p.category_scores["harassment/threatening"],
+          selfHarm: p.category_scores["self-harm"],
+          "self-harm/intent": p.category_scores["self-harm/intent"],
+          "self-harm/instructive": p.category_scores["self-harm/instructive"],
+          sexual: p.category_scores["sexual"],
+          "sexual/minors": p.category_scores["sexual/minors"],
+          violence: p.category_scores["violence"],
+          "violence/graphic": p.category_scores["violence/graphic"],
+        },
+      })
+    ),
   };
 }
 
