@@ -100,7 +100,10 @@ import {
   StreamableMethod,
   operationOptionsToRequestParameters,
 } from "@azure-rest/core-client";
-import { uint8ArrayToString, stringToUint8Array } from "@azure/core-util";
+import {
+  uint8ArrayToString as coreUint8ArrayToString,
+  stringToUint8Array,
+} from "@azure/core-util";
 import {
   CreateTranscriptionOptions,
   CreateTranslationOptions,
@@ -131,6 +134,17 @@ import {
   CreateImageVariationOptions,
   CreateModerationOptions,
 } from "../models/options.js";
+
+function uint8ArrayToString(
+  array: Uint8Array,
+  encoding: Parameters<typeof coreUint8ArrayToString>[1] | "binary"
+): string {
+  if (encoding === "binary") {
+    throw new Error("Got binary encoding, but this is not supported");
+  }
+
+  return coreUint8ArrayToString(array, encoding);
+}
 
 export function _createTranscriptionSend(
   context: Client,
