@@ -9,6 +9,13 @@ export interface ErrorResponseOutput {
   error: ErrorModelOutput;
 }
 
+export interface ErrorModelOutput {
+  type: string;
+  message: string;
+  param: string | null;
+  code: string | null;
+}
+
 export interface CreateTranslationResponseOutput {
   text: string;
 }

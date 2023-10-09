@@ -334,7 +334,9 @@ export async function _createFineTuningJobDeserialize(
     id: result.body["id"],
     object: result.body["object"],
     createdAt: new Date(result.body["created_at"]),
-    finishedAt: new Date(result.body["finished_at"]),
+    finishedAt: result.body["finished_at"]
+      ? new Date(result.body["finished_at"])
+      : null,
     model: result.body["model"],
     fineTunedModel: result.body["fine_tuned_model"],
     organizationId: result.body["organization_id"],
@@ -458,7 +460,9 @@ export async function _retrieveFineTuningJobDeserialize(
     id: result.body["id"],
     object: result.body["object"],
     createdAt: new Date(result.body["created_at"]),
-    finishedAt: new Date(result.body["finished_at"]),
+    finishedAt: result.body["finished_at"]
+      ? new Date(result.body["finished_at"])
+      : null,
     model: result.body["model"],
     fineTunedModel: result.body["fine_tuned_model"],
     organizationId: result.body["organization_id"],
@@ -564,7 +568,9 @@ export async function _cancelFineTuningJobDeserialize(
     id: result.body["id"],
     object: result.body["object"],
     createdAt: new Date(result.body["created_at"]),
-    finishedAt: new Date(result.body["finished_at"]),
+    finishedAt: result.body["finished_at"]
+      ? new Date(result.body["finished_at"])
+      : null,
     model: result.body["model"],
     fineTunedModel: result.body["fine_tuned_model"],
     organizationId: result.body["organization_id"],
