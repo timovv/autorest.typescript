@@ -24,7 +24,8 @@ import {
   getFormattedPropertyDoc,
   getBodyType,
   predictDefaultValue,
-  enrichBinaryTypeInBody
+  enrichBinaryTypeInBody,
+  enrichMultipartTypeInBody
 } from "../utils/modelUtils.js";
 
 import {
@@ -238,7 +239,11 @@ function transformBodyParameters(
   if (!bodyType) {
     return;
   }
-  const { hasBinaryContent } = getBodyDetail(dpgContext, bodyType, headers);
+  const { hasBinaryContent, hasFormContent } = getBodyDetail(
+    dpgContext,
+    bodyType,
+    headers
+  );
 
   return transformNormalBody(
     dpgContext,
@@ -246,7 +251,8 @@ function transformBodyParameters(
     parameters,
     importedModels,
     headers,
-    hasBinaryContent
+    hasBinaryContent,
+    hasFormContent
   );
 }
 
@@ -256,7 +262,8 @@ function transformNormalBody(
   parameters: HttpOperationParameters,
   importedModels: Set<string>,
   headers: ParameterMetadata[],
-  hasBinaryContent: boolean
+  hasBinaryContent: boolean,
+  hasFormContent: boolean
 ) {
   const descriptions = extractDescriptionsFromBody(
     dpgContext,
@@ -279,6 +286,11 @@ function transformNormalBody(
     schema = enrichBinaryTypeInBody(schema);
     overrideType = schema.typeName;
   }
+
+  if (hasFormContent) {
+    enrichMultipartTypeInBody(schema);
+  }
+
   return {
     isPartialBody: false,
     body: [

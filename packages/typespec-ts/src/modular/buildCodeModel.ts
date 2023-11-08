@@ -1204,14 +1204,27 @@ function applyEncoding(
   target: any = {}
 ) {
   const encodeData = getEncode(program, typespecType);
+
   if (encodeData) {
+    let encoding = encodeData.encoding;
+    // Special case: if encode is binary and content type is multipart/form-data, make a file upload
+    if (encoding === "binary" && typespecType.kind === "ModelProperty") {
+      const contentType = typespecType.model?.properties.get("contentType");
+      if (
+        contentType?.default?.kind === "String" &&
+        contentType?.default.value === "multipart/form-data"
+      ) {
+        encoding = "file";
+      }
+    }
+
     const newTarget = { ...target };
     const newType = emitScalar(program, encodeData.type);
     // newTarget["type"] = newType["type"];
     // If the target already has a format it takes priority. (e.g. int32)
     newTarget["format"] = mergeFormatAndEncoding(
       newTarget.format,
-      encodeData.encoding,
+      encoding,
       newType["format"]
     );
     return newTarget;

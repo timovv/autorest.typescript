@@ -27,7 +27,6 @@ const simpleTypeMap: Record<string, TypeMetadata> = {
   datetime: { name: "Date" },
   float: { name: "number" },
   integer: { name: "number" },
-  "byte-array": { name: "Uint8Array" },
   string: { name: "string" },
   any: { name: "Record<string, any>" },
   unknown: { name: "unknown" }
@@ -91,6 +90,9 @@ export function getType(type: Type, format?: string): TypeMetadata {
 
     case "model":
       return handleModelType(type);
+
+    case "byte-array":
+      return handleByteArrayType(type, format);
 
     case "duration":
       return handleDurationType(type, format);
@@ -228,6 +230,18 @@ function handleDictType(type: Type): TypeMetadata {
   return {
     name: `Record<string, ${elementName}>`
   };
+}
+
+function handleByteArrayType(_type: Type, format?: string) {
+  if (format === "binary") {
+    return {
+      name: "File"
+    };
+  } else {
+    return {
+      name: "Uint8Array"
+    };
+  }
 }
 
 /**

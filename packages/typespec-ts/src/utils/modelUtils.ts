@@ -131,6 +131,14 @@ export function enrichBinaryTypeInBody(schema: any) {
   return schema;
 }
 
+export function enrichMultipartTypeInBody(schema: any) {
+  for (const [, item] of Object.entries(schema.properties)) {
+    if (isByteType(item)) {
+      refineByteType(item);
+    }
+  }
+}
+
 export function getSchemaForType(
   dpgContext: SdkContext,
   typeInput: Type,
@@ -306,6 +314,11 @@ function getSchemaForScalar(
       : undefined
   );
   if (withDecorators.type === "string" && withDecorators.format === "binary") {
+    withDecorators.typeName =
+      "string | Uint8Array | ReadableStream<Uint8Array> | NodeJS.ReadableStream";
+    withDecorators.outputTypeName = "Uint8Array";
+  }
+  if (withDecorators.type === "bytes" && withDecorators.format === "binary") {
     withDecorators.typeName =
       "string | Uint8Array | ReadableStream<Uint8Array> | NodeJS.ReadableStream";
     withDecorators.outputTypeName = "Uint8Array";
