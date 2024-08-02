@@ -1,4 +1,4 @@
-# Should flatten alias if spread in the payload with optional parameters
+# only: Should flatten alias if spread in the payload with optional parameters
 
 ## TypeSpec
 
@@ -23,4 +23,7 @@ op read(@path pathParam: string, @query queryParam: string, ...Foo): OkResponse;
 ```
 
 ```ts models function BarSerializer
+```
+
+```ts operations
 ```
