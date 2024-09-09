@@ -190,6 +190,17 @@ function handleListType(type: Type): TypeMetadata {
  */
 function handleModelType(type: Type): TypeMetadata {
   let name = !type.name ? handleAnomymousModelName(type) : type.name;
+
+  if(type.isHttpFile) {
+    const filenameProperty = type.properties?.find(x => x.restApiName === "filename");
+    const canFlatten = filenameProperty?.optional || !!filenameProperty?.clientDefaultValue;
+    if(canFlatten) {
+      name = `(FileContent | (${name}))`;
+    } else {
+      name = `(NamedFileContent | (${name}))`;
+    }
+  }
+
   name = handleNullableTypeName({
     name,
     nullable: isTypeNullable(type)

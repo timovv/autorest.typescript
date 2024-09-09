@@ -18,11 +18,12 @@ import {
   addImportToSpecifier
 } from "@azure-tools/rlc-common";
 import { NoTarget, Program } from "@typespec/compiler";
-import { PagingHelpers, PollingHelpers } from "../static-helpers-metadata.js";
+import { FileUploadHelpers, PagingHelpers, PollingHelpers } from "../static-helpers-metadata.js";
 import {
   SdkContext,
   SdkModelType,
-  SdkType
+  SdkType,
+  UsageFlags
 } from "@azure-tools/typespec-client-generator-core";
 import { buildType, getType, isTypeNullable } from "./typeHelpers.js";
 import { getClassicalLayerPrefix, getOperationName } from "./namingHelpers.js";
@@ -569,6 +570,11 @@ function buildBodyParameter(
   }
 
   const allParents = getAllAncestors(bodyParameter.type);
+
+  if(((bodyParameter.type.usage ?? 0) & UsageFlags.MultipartFormData) === UsageFlags.MultipartFormData) {
+    return `body: ${getMultipartBodyMapping(bodyParameter.type, bodyParameter.clientName, runtimeImports)},`;
+  }
+
   if (
     bodyParameter.type.type === "model" &&
     !bodyParameter.type.aliasType &&
@@ -1061,6 +1067,34 @@ export function getRequestModelMapping(
   }
 
   return { propertiesStr: props };
+}
+
+function getMultipartBodyMapping(
+  bodyType: Type,
+  propertyPath: string = "body",
+  runtimeImports: RuntimeImports,
+): string {
+  const props: string[] = [];
+
+  function getValueExpression(property: Property, type: Type, placeholder: string): string {
+    // File uploads get treated differently
+    if(property.multipartOptions?.isFilePart) {
+      return `${resolveReference(FileUploadHelpers.getFilePart)}("${property.restApiName}", ${placeholder})`;
+    } else {
+      const value = serializeRequestValue(type, placeholder, runtimeImports, true, [bodyType, type]);
+      return `({ name: "${property.restApiName}", body: ${value} })`;
+    }
+  }
+
+  for(const property of bodyType.properties ?? []) {
+    if(property.type.type === "list" && property.multipartOptions?.isMulti) {
+      props.push(`...(${propertyPath}.${property.clientName}.map(x => ${getValueExpression(property, property.type.elementType!, "x")}))`);
+    } else {
+      props.push(getValueExpression(property, property.type, `${propertyPath}.${property.clientName}`));
+    }
+  }
+
+  return `[${props.join(",")}]`;
 }
 
 /**

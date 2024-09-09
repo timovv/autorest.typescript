@@ -9,7 +9,6 @@ import {
   Scalar,
   Type,
   Union,
-  UsageFlags,
   getDiscriminator,
   getDoc,
   getEncode,
@@ -48,12 +47,15 @@ import {
 import {
   HttpAuth,
   HttpOperation,
+  HttpOperationBody,
   HttpOperationParameter,
   HttpOperationResponse,
   HttpOperationResponseContent,
   HttpServer,
   getAuthentication,
   getServers,
+  isHttpFile,
+  isOrExtendsHttpFile,
   isSharedRoute
 } from "@typespec/http";
 import {
@@ -65,10 +67,14 @@ import {
   normalizeName
 } from "@azure-tools/rlc-common";
 import {
+  MultipartOptions,
   SdkBuiltInType,
   SdkClient,
   SdkEnumValueType,
+  SdkModelPropertyType,
+  SdkModelType,
   SdkType,
+  UsageFlags,
   getAllModels,
   getClientNamespaceString,
   getClientType,
@@ -115,6 +121,7 @@ import { getType as getTypeName } from "./helpers/typeHelpers.js";
 import { isModelWithAdditionalProperties } from "./emitModels.js";
 import { reportDiagnostic } from "../lib.js";
 import { useContext } from "../contextManager.js";
+import { useSdkTypes } from "../framework/hooks/sdkTypes.js";
 
 interface HttpServerParameter {
   type: "endpointPath";
@@ -251,19 +258,22 @@ function processModelProperties(
 ) {
   // need to do properties after insertion to avoid infinite recursion
   const discriminatorInfo = handleDiscriminator(context, model, usage);
+  const getSdkType = useSdkTypes();
+  const sdkType = getSdkType(model) as SdkModelType;
   let hasDiscriminator = false;
-  for (const property of model.properties.values()) {
-    if (!isSchemaProperty(context.program, property)) {
+  for (const property of sdkType.properties?.values() ?? []) {
+    const rawProperty = property.__raw!;
+    if (!isSchemaProperty(context.program, rawProperty)) {
       continue;
     }
-    if (isNeverType(property.type)) {
+    if (isNeverType(rawProperty)) {
       continue;
     }
     if (newValue.properties === undefined || newValue.properties === null) {
       newValue.properties = [];
     }
     let newProperty = emitProperty(context, property, usage);
-    if (isDiscriminator(context, model, property.name)) {
+    if (isDiscriminator(context, model, rawProperty.name)) {
       hasDiscriminator = true;
       newProperty = {
         ...newProperty,
@@ -339,7 +349,7 @@ function getType(
 
   if (isTypespecType(type)) {
     newValue.tcgcType = getClientType(context, type);
-    newValue.__raw = type;
+    newValue.isHttpFile = isOrExtendsHttpFile(context.program, type);
     modularMetatree.set(type, newValue);
   }
 
@@ -465,8 +475,11 @@ function emitBodyParameter(
 ): BodyParameter | undefined {
   const params = httpOperation.parameters;
   const body = params.body!;
-  if (body.bodyKind === "single") {
-    const base = emitParamBase(context, body.parameter ?? body.type);
+  if (body.bodyKind === "single" || body.bodyKind === "multipart") {
+    const base = emitParamBase(
+      context,
+      (body as HttpOperationBody).parameter ?? body.type
+    );
     let contentTypes = body.contentTypes;
     if (contentTypes.length === 0) {
       contentTypes = ["application/json"];
@@ -932,42 +945,54 @@ function isReadOnly(program: Program, type: ModelProperty): boolean {
 
 function emitProperty(
   context: SdkContext,
-  property: ModelProperty,
+  property: SdkModelPropertyType,
   usage: UsageFlags
 ): Record<string, any> {
-  const newProperty = applyEncoding(context.program, property, property);
+  const rawProperty = property.__raw!;
+  const newProperty = applyEncoding(context.program, rawProperty, rawProperty);
   let clientDefaultValue = undefined;
-  const propertyDefaultKind = property.default?.kind;
+  const propertyDefaultKind = rawProperty.default?.kind;
   if (
-    property.default &&
+    rawProperty.default &&
     (propertyDefaultKind === "Number" ||
       propertyDefaultKind === "String" ||
       propertyDefaultKind === "Boolean")
   ) {
-    clientDefaultValue = property.default.value;
+    clientDefaultValue = rawProperty.default.value;
   }
 
   if (propertyDefaultKind === "EnumMember") {
-    clientDefaultValue = property.default.value ?? property.default.name;
+    clientDefaultValue = rawProperty.default.value ?? rawProperty.default.name;
   }
 
   // const [clientName, jsonName] = getPropertyNames(context, property);
-  const clientName = getLibraryName(context, property);
-  const jsonName = getWireName(context, property);
+  const clientName = getLibraryName(context, rawProperty);
+  const jsonName = getWireName(context, rawProperty);
 
-  if (property.model) {
-    getType(context, property.model, { usage });
+  if (rawProperty.model) {
+    getType(context, rawProperty.model, { usage });
   }
-  const type = getType(context, property.type, { usage });
+
+  // For multipart, use the property type from TCGC so that we emit the underlying type instead of HttpPart
+  let type: Type;
+  let multipartOptions: MultipartOptions | undefined = undefined;
+  if (property.kind === "property" && property.multipartOptions) {
+    type = getType(context, property.type.__raw!, { usage });
+    multipartOptions = property.multipartOptions;
+  } else {
+    type = getType(context, rawProperty.type, { usage });
+  }
+
   return {
     clientName: applyCasing(clientName, { casing: CASING }),
     restApiName: jsonName,
     type: newProperty.format ? { ...type, format: newProperty.format } : type,
-    optional: property.optional,
-    description: getDocStr(context.program, property),
-    addedOn: getAddedOnVersion(context.program, property),
-    readonly: isReadOnly(context.program, property),
+    optional: rawProperty.optional,
+    description: getDocStr(context.program, rawProperty),
+    addedOn: getAddedOnVersion(context.program, rawProperty),
+    readonly: isReadOnly(context.program, rawProperty),
     clientDefaultValue: clientDefaultValue,
+    multipartOptions,
     format: newProperty.format
   };
 }
@@ -1047,6 +1072,13 @@ function emitModel(
           }
         })
         .join("") + "List";
+  }
+
+  // TODO: this is a HACK, idk if we should do this rename like this
+  // (don't want the TypeSpec stdlib File to collide with the File global)
+  // (the TypeSpec isHttpFile helper only matches the File type decorated with @Private.httpFile)
+  if(isHttpFile(context.program, type)) {
+    modelName = "FileDetails";
   }
 
   const page = extractPagedMetadataNested(context.program, type);
@@ -1325,19 +1357,30 @@ function emitListOrDict(
   type: Model,
   usage: UsageFlags
 ): Record<string, any> | undefined {
+  const sdkType = useSdkTypes()(type);
+
   if (type.indexer !== undefined) {
     if (!isNeverType(type.indexer.key)) {
+
+      // For MFD get indexer type from TCGC
+      let valueType: EmitterType;
+      if(sdkType.kind === "array" && (usage & UsageFlags.MultipartFormData) === UsageFlags.MultipartFormData) {
+        valueType = sdkType.valueType.__raw!;
+      } else {
+        valueType = type.indexer.value!;
+      }
+
       const name = type.indexer.key.name;
       if (name === "string") {
         return {
           type: "dict",
           name: type.name,
-          elementType: getType(context, type.indexer.value!, { usage })
+          elementType: getType(context, valueType, { usage })
         };
       } else if (name === "integer") {
         return {
           type: "list",
-          elementType: getType(context, type.indexer.value!, { usage })
+          elementType: getType(context, valueType, { usage })
         };
       }
     }

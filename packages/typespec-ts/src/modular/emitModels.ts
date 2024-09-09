@@ -9,6 +9,7 @@ import {
   InterfaceDeclarationStructure,
   OptionalKind,
   SourceFile,
+  StructureKind,
   TypeAliasDeclarationStructure
 } from "ts-morph";
 import { addImportsToFiles, getImportSpecifier } from "@azure-tools/rlc-common";
@@ -20,8 +21,13 @@ import { getDocsFromDescription } from "./helpers/docsHelpers.js";
 import { getModularModelFilePath } from "./helpers/namingHelpers.js";
 import { getType } from "./helpers/typeHelpers.js";
 import { toCamelCase } from "../utils/casingUtils.js";
+import { addDeclaration } from "../framework/declaration.js";
+import { resolveReference } from "../framework/reference.js";
 
 // ====== UTILITIES ======
+
+const NAMED_FILE_CONTENT_HELPER_TYPE = "NamedFileContent";
+const FILE_CONTENT_HELPER_TYPE = "FileContent";
 
 function isAzureCoreErrorSdkType(t: ModularType) {
   return (
@@ -143,6 +149,12 @@ export function buildModelInterface(
     properties: (modelProperties ?? []).map((p) => {
       const propertyMetadata = getType(p.type, p.format);
       let propertyTypeName = propertyMetadata.name;
+
+      if (model.isHttpFile && p.type.type === "byte-array") {
+        // This is an internal.httpFile and so we should accept streaming primitives for the file content
+        propertyTypeName = resolveReference(FILE_CONTENT_HELPER_TYPE);
+      }
+      
       if (isAzureCoreErrorSdkType(p.type)) {
         propertyTypeName = getCoreClientErrorType(
           propertyTypeName,
@@ -187,6 +199,21 @@ export function buildModels(
   const modelsFile = codeModel.project.createSourceFile(
     getModularModelFilePath(codeModel, subClient)
   );
+
+  addDeclaration(modelsFile, {
+    kind: StructureKind.TypeAlias,
+    isExported: true,
+    name: FILE_CONTENT_HELPER_TYPE,
+    type: "string | Blob | Uint8Array | NodeJS.ReadableStream | ReadableStream<Uint8Array>"
+  }, FILE_CONTENT_HELPER_TYPE);
+
+  addDeclaration(modelsFile, {
+    kind: StructureKind.TypeAlias,
+    isExported: true,
+    name: NAMED_FILE_CONTENT_HELPER_TYPE,
+    type: "File"
+  }, NAMED_FILE_CONTENT_HELPER_TYPE);
+
   for (const model of models) {
     if (model.type === "enum") {
       if (modelsFile.getTypeAlias(model.name!)) {

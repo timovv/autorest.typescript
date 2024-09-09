@@ -71,3 +71,12 @@ export const PollingHelpers = {
     location: "pollingHelpers.ts"
   }
 } as const;
+
+
+export const FileUploadHelpers = {
+  getFilePart: {
+    kind: "function",
+    name: "getFilePart",
+    location: "fileUploadHelpers.ts"
+  }
+} as const;

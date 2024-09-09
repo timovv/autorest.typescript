@@ -5,6 +5,7 @@ import {
   RLCOptions
 } from "@azure-tools/rlc-common";
 import {
+  MultipartOptions,
   SdkBodyParameter,
   SdkType
 } from "@azure-tools/typespec-client-generator-core";
@@ -41,6 +42,7 @@ export interface Property {
   description: string;
   readonly?: boolean;
   format?: string;
+  multipartOptions?: MultipartOptions;
 }
 
 export interface BodyParameter {
@@ -118,6 +120,7 @@ export interface Type {
   discriminator?: string;
   discriminatorValue?: string;
   isPolymorphicBaseModel?: boolean;
+  isHttpFile?: boolean;
   tcgcType?: SdkType;
   __raw?: TypespecType;
   nullable?: boolean;
