@@ -40,8 +40,8 @@ export function _getResultFileSend(
   );
   return context
     .path(path_1)
-    .get({r
-      ...operationOptionsToRequestPaameters(options),
+    .get({
+      ...operationOptionsToRequestParameters(options),
       headers: { accept: "text/plain", ...options.requestOptions?.headers },
     });
 }
