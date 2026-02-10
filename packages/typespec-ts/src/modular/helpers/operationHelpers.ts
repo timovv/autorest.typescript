@@ -17,7 +17,11 @@ import {
   isSpreadBodyParameter,
   isTypeNullable
 } from "./typeHelpers.js";
-import { getClassicalLayerPrefix, getOperationName } from "./namingHelpers.js";
+import {
+  getClassicalLayerPrefix,
+  getOperationName,
+  generateLocallyUniqueName
+} from "./namingHelpers.js";
 import {
   getCollectionFormatHelper,
   hasCollectionFormatInfo,
@@ -121,12 +125,15 @@ export function getSendPrivateFunction(
     ...getQueryParameters(dpgContext, operation)
   ];
   if (urlTemplateParams.length > 0) {
-    statements.push(`const path = ${resolveReference(UrlTemplateHelpers.parseTemplate)}("${operation.operation.uriTemplate}", {
+    // Generate a unique local variable name that doesn't conflict with parameter names
+    const paramNames = new Set(parameters.map((p) => p.name));
+    const pathVarName = generateLocallyUniqueName("path", paramNames);
+    statements.push(`const ${pathVarName} = ${resolveReference(UrlTemplateHelpers.parseTemplate)}("${operation.operation.uriTemplate}", {
         ${urlTemplateParams.join(",\n")}
         },{
       allowReserved: ${optionalParamName}?.requestOptions?.skipUrlEncoding
     });`);
-    pathStr = "path";
+    pathStr = pathVarName;
   }
 
   statements.push(
